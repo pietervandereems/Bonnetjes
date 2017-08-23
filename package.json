@@ -1,0 +1,24 @@
+{
+  "name": "bonnetjes",
+  "version": "1.0.0",
+  "description": "Bonnetjes PWA",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "keywords": [
+    "Bonnetjes"
+  ],
+  "author": "Pieter van der Eems <github@eemco.nl>",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "pouchdb-browser": "^6.3.4",
+    "pouchdb-find": "^6.3.4",
+    "upup": "^0.3.0"
+  },
+  "devDependencies": {
+    "webpack": "^3.5.5",
+    "webpack-dev-server": "^2.7.1"
+  }
+}
