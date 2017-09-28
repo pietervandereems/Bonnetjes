@@ -13,7 +13,7 @@
   "author": "Pieter van der Eems <github@eemco.nl>",
   "license": "AGPL-3.0",
   "dependencies": {
-    "pouchdb-browser": "^6.3.4",
+    "pouchdb": "^6.3.4",
     "pouchdb-find": "^6.3.4",
     "upup": "^0.3.0"
   },
