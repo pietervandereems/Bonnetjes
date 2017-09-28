@@ -46,12 +46,10 @@ const addStudentListener = (info) => new Promise((resolve) => {
         const target = ev.target;
         console.log('dblclick', { target });
         if (target.tagName === 'LI') {
-            
+
         }
     });
     resolve(info);
 });
-
-
 
 export { addStudentListener };
