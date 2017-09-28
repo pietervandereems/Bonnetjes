@@ -20,10 +20,9 @@ import { getBonnetjes, getSubjects } from './data.js';
 //     .catch(errLog('Error caught in main.js list'));
 
 list(getSubjects, (item) => item.name, (item) => item._id)
-    .then(console.info);
-    // .then((list) => addButtons(list, '+'))
-    // .then((list) => addListener(list))
-    // .then((list) => {
-    //     document.getElementById('subjects').appendChild(list);
-    // })
-    // .catch(errLog('error caught in list inside main.js'));
+    .then((list) => addButtons(list, '+'))
+    .then((list) => addListener(list))
+    .then((list) => {
+        document.getElementById('subjects').appendChild(list);
+    })
+    .catch(errLog('error caught in list inside main.js'));
