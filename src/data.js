@@ -1,106 +1,75 @@
-import * as PouchDB from 'pouchdb-browser';
-import { log, errLog } from './utils';
+import PouchDB from 'pouchdb';
+import PouchFind from 'pouchdb-find';
+PouchDB.plugin(PouchFind);
 
-PouchDB.plugin(require('pouchdb-find'));
+import { reThrow } from './utils';
 
-const db = new PouchDB('marks-aid'),
+
+const db = new PouchDB('bonnetjes'),
     indexes = [
         {
-            fields: ['type'],
-            name: 'type',
-            ddoc: 'typeindex',
-            type: 'json'
-        },
-        {
-            fields: ['type', 'name'],
-            name: 'student',
-            ddoc: 'studentindex',
+            fields: ['subject'],
+            name: 'subject',
+            ddoc: 'subjectindex',
             type: 'json'
         }
-    ];
+    ],
+    subjects = {
+        _id: '_design/subjects',
+        version: 4,
+        views: {
+            subjects: {
+                map: function mapFun (doc) {
+                    if (doc.subject) {
+                        emit(doc.subject);
+                    }
+                }.toString()
+            }
+        }
+    };
+var checked = false;
 
-console.log("REMOVE THIS! (data.js)");
+console.error('DB is exposed, remove the line below in data.js!');
 window.db = db;
+
+const createMap = () => db.get(subjects._id)
+    .then((docs) => {
+        if (!docs.version || docs.version !== subjects.version) {
+            console.info('Updating subject map/reduce');
+            return db.put(Object.assign({}, subjects, { _rev: docs._rev }));
+        }
+        return docs;
+    })
+    .catch((err) => {
+        console.error(err);
+        if (err.name !== 'conflict') {
+            reThrow('Createmap problem, subjects:', subjects)(err);
+        }
+    });
 
 const createIndexes = () => Promise.all(indexes.map((index) => db.createIndex({ index: index })));     // db.createIndex does nothing if index already exists.
 
-const getStudents = () => createIndexes()
-    .then(() => db.find({
-        selector: { type: 'student' }
-    }))
+const check = () => {
+    if (!checked) {
+        return Promise.all([createMap, createIndexes])
+            .then(() => {
+                checked = true;
+                return true;
+            });
+    }
+    return Promise.resolve(true);
+};
+
+check();
+
+const getBonnetjes = (subject) => check()
+    .then(() => db.find({ selector: { subject: subject } }))
     .then((results) => results.docs);
 
-const listStudents = () => new Promise((resolve, reject) => {
-    getStudents()
-        .then((students) => {
-            const ul = document.createElement('ul');
-            const info = {
-                students: students.map((student) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = student.name;
-                    ul.appendChild(li);
-                    return Object.assign({}, student, { element: li });
-                }),
-                topElement: ul
-            };
-
-            document.querySelector('#students').appendChild(ul);
-            resolve(info);
-        })
-        .catch((err) => {
-            console.error(err); // console.error this because a TypeError information is otherwise lost (empty object with (deep) cloning, no stackTrace with .toString)
-            reject(Object.assign({}, err, { msg: 'Error caught at listStudents' }));
-        });
-});
-
-const listGrade = (name, output) => new Promise((resolve, reject) => {
-    createIndexes()
-        .then(() => db.find({
-            selector: { type: 'student', name: name }
-        }))
-        .then((result) => {
-            if (result.docs.length === 0) {
-                output.innerHTML = 'Unknown student';
-                resolve(false);
-                return;
-            }
-
-            const student = result.docs[0],
-                ul = document.createElement('ul');
-
-            student.grades = student.grades || [];
-
-            if (student.grades.length === 0) {
-                output.innerHTML += ', No grades available for this student';
-                resolve({
-                    name: name,
-                    grades: []
-                });
-                return;
-            }
-            const grades = student.grades.map((grade) => {
-                const li = document.createElement('li');
-                li.innerHTML = grade.subject + ':' + grade.grade;
-                ul.appendChild(li);
-                return grade;
-            });
-            output.appendChild(ul);
-
-            resolve({
-                name: name,
-                grades: grades
-            });
-        })
-        .catch((err) => {
-            console.error(err); // console.error this because a TypeError information is otherwise lost (empty object with (deep) cloning, no stackTrace with .toString)
-            reject(Object.assign({}, err, { msg: 'Error caught at listSubjects' }));
-        });
-});
-
-const listGrades = (info) => Promise.all(info.students.map((student) => listGrade(student.name, student.element)))
-    .then((studentsInfo) => ({ topElement: info.topElement, students: studentsInfo.filter((student) => Boolean(student)) })); // Add information of all students tot the list then pass on the info
-
+const getSubjects = () => check()
+    .then(() => db.query('subjects', { reduce: '_count' }))
+    .then((results) => results.rows);
 
 const add = (doc, options) => db.post(doc, options);
 
-export { listGrades, listStudents, add, getStudents };
+export { add, getBonnetjes, getSubjects };
