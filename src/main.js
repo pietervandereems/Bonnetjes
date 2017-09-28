@@ -1,7 +1,7 @@
 import { addButtons, addListener, list } from './list';
 import { errLog, log } from './utils';
-import { getStudents, listGrades, listStudents } from './data.js';
-import { addStudentListener } from './events.js';
+import { getBonnetjes, getSubjects } from './data.js';
+// import { addStudentListener } from './events.js';
 
 // listStudents()
 //     .then(addStudentListener)
@@ -19,10 +19,11 @@ import { addStudentListener } from './events.js';
 //     .then(log('main.js call'))
 //     .catch(errLog('Error caught in main.js list'));
 
-list(getStudents, (item) => item.name, (item) => item._id)
-    .then((list) => addButtons(list, 'Add Students'))
-    .then((list) => addListener(list))
-    .then((list) => {
-        document.getElementById('students').appendChild(list);
-    })
-    .catch(errLog('error caught in list inside main.js'));
+list(getSubjects, (item) => item.name, (item) => item._id)
+    .then(console.info);
+    // .then((list) => addButtons(list, '+'))
+    // .then((list) => addListener(list))
+    // .then((list) => {
+    //     document.getElementById('subjects').appendChild(list);
+    // })
+    // .catch(errLog('error caught in list inside main.js'));
